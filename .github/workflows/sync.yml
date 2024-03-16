@@ -17,3 +17,4 @@ jobs:
           repo: my-tv
           head: main
           base: main
+          ignore_fail: true
