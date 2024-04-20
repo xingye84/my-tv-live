@@ -13,6 +13,8 @@ import com.lizongying.mytv.api.FAuthService
 import com.lizongying.mytv.api.FEPG
 import com.lizongying.mytv.api.Info
 import com.lizongying.mytv.api.InfoV2
+import com.lizongying.mytv.api.KvcollectRequest
+import com.lizongying.mytv.api.KvcollectRequest2
 import com.lizongying.mytv.api.LiveInfo
 import com.lizongying.mytv.api.LiveInfoRequest
 import com.lizongying.mytv.api.YSP
@@ -32,6 +34,7 @@ import retrofit2.Response
 import javax.crypto.Cipher
 import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
+import kotlin.random.Random
 
 
 object Request {
@@ -39,6 +42,8 @@ object Request {
     private var yspTokenService: YSPTokenService = ApiClient().yspTokenService
     private var yspApiService: YSPApiService = ApiClient().yspApiService
     private var yspBtraceService: YSPBtraceService = ApiClient().yspBtraceService
+    private var yspBtraceService2: YSPBtraceService = ApiClient().yspBtraceService2
+    private var yspBtraceService3: YSPBtraceService = ApiClient().yspBtraceService3
     private var yspProtoService: YSPProtoService = ApiClient().yspProtoService
     private var yspJceService: YSPJceService = ApiClient().yspJceService
     private var fAuthService: FAuthService = ApiClient().fAuthService
@@ -531,7 +536,7 @@ object Request {
 
     class BtraceRunnable(private val tvModel: TVViewModel) : Runnable {
         override fun run() {
-            fetchBtrace(tvModel)
+            fetchBtrace3(tvModel)
         }
     }
 
@@ -558,7 +563,116 @@ object Request {
         callBtracePage?.enqueue(object : Callback<Void> {
             override fun onResponse(call: Call<Void>, response: Response<Void>) {
                 if (response.isSuccessful) {
-                    //                        Log.d(TAG, "$title kvcollect success")
+                    Log.d(TAG, "$title kvcollect success")
+                } else {
+                    Log.e(TAG, "$title kvcollect status error")
+                }
+                handler.postDelayed(btraceRunnable, 60 * 1000)
+            }
+
+            override fun onFailure(call: Call<Void>, t: Throwable) {
+                Log.e(TAG, "$title kvcollect request error")
+                handler.postDelayed(btraceRunnable, 60 * 1000)
+            }
+        })
+        tvModel.seq++
+    }
+
+    fun fetchBtrace2(tvModel: TVViewModel) {
+        callBtracePage?.cancel()
+        val title = tvModel.getTV().title
+
+        val guid = YSP.getGuid()
+        val pid = tvModel.getTV().pid
+        val sid = tvModel.getTV().sid
+        val randomNumber = Random.nextDouble()
+        val url = tvModel.getTV().videoUrl.first()
+
+        val r = KvcollectRequest(
+            guid = guid,
+            prog = sid,
+            viewid = sid,
+            livepid = pid,
+            sUrl = "https://www.yangshipin.cn/#/tv/home?pid=$pid",
+            playno = YSP.getRand(),
+            rand_str = YSP.getRand(),
+            ftime = getDateFormat("yyyy-MM-dd HH:mm:ss"),
+            seq = tvModel.seq,
+            durl = url,
+            url = url,
+            _dc = randomNumber,
+        )
+
+        val e =
+            "BossId=${r.BossId}&Pwd=${r.Pwd}&_dc=${r._dc}&cdn=${r.cdn}&cmd=${r.cmd}&defn=${r.defn}&downspeed=${r.downspeed}&durl=${r.durl}&errcode=${r.errcode}&fact1=${r.fact1}&firstreport=${r.firstreport}&fplayerver=${r.fplayerver}&ftime=${r.ftime}&geturltime=6&guid=${r.guid}&hc_openid=${r.hc_openid}&hh_ua=${r.hh_ua}&live_type=${r.live_type}&livepid=${r.livepid}&login_type=${r.login_type}&open_id=&openid=${r.openid}&platform=${r.platform}&playno=${r.playno}&prd=${r.prd}&prog=${r.prog}&rand_str=${r.rand_str}&sRef=${r.sRef}&sUrl=${r.sUrl}&sdtfrom=${r.sdtfrom}&seq=${r.seq}&url=${r.url}&viewid=${r.viewid}"
+        r.signature = YSP.getAuthSignature(e)
+        callBtracePage = yspBtraceService2.kvcollect2(r)
+        callBtracePage?.enqueue(object : Callback<Void> {
+            override fun onResponse(call: Call<Void>, response: Response<Void>) {
+                if (response.isSuccessful) {
+                    Log.d(TAG, "$title kvcollect success")
+                } else {
+                    Log.e(TAG, "$title kvcollect status error")
+                }
+                handler.postDelayed(btraceRunnable, 60 * 1000)
+            }
+
+            override fun onFailure(call: Call<Void>, t: Throwable) {
+                Log.e(TAG, "$title kvcollect request error")
+                handler.postDelayed(btraceRunnable, 60 * 1000)
+            }
+        })
+        tvModel.seq++
+    }
+
+    fun fetchBtrace3(tvModel: TVViewModel) {
+        callBtracePage?.cancel()
+        val title = tvModel.getTV().title
+
+        val guid = YSP.getGuid()
+        val pid = tvModel.getTV().pid
+        val sid = tvModel.getTV().sid
+        val randomNumber = Random.nextDouble()
+        val url = tvModel.getTV().videoUrl.first()
+
+        val r = KvcollectRequest2(
+            guid = guid,
+            prog = sid,
+            viewid = sid,
+            livepid = pid,
+            sUrl = "https://www.yangshipin.cn/#/tv/home?pid=$pid",
+            playno = YSP.getRand(),
+            rand_str = YSP.getRand(),
+            ftime = getDateFormat("yyyy-MM-dd HH:mm:ss"),
+            seq = tvModel.seq,
+            durl = url,
+            url = url,
+            _dc = randomNumber,
+        )
+
+        val e =
+            "BossId=${r.BossId}&Pwd=${r.Pwd}&_dc=${r._dc}&cdn=${r.cdn}&cmd=${r.cmd}&defn=${r.defn}&downspeed=${r.downspeed}&durl=${r.durl}&errcode=${r.errcode}&fact1=${r.fact1}&firstreport=${r.firstreport}&fplayerver=${r.fplayerver}&ftime=${r.ftime}&geturltime=${r.geturltime}&guid=${r.guid}&hc_openid=${r.hc_openid}&hh_ua=${r.hh_ua}&live_type=${r.live_type}&livepid=${r.livepid}&login_type=${r.login_type}&open_id=${r.open_id}&openid=${r.openid}&platform=${r.platform}&playno=${r.playno}&prd=${r.prd}&prog=${r.prog}&rand_str=${r.rand_str}&sRef=${r.sRef}&sUrl=${r.sUrl}&sdtfrom=${r.sdtfrom}&seq=${r.seq}&url=${r.url}&viewid=${r.viewid}"
+        r.signature = YSP.getAuthSignature(e)
+
+        callBtracePage = yspBtraceService3.kvcollect3(
+            guid = r.guid,
+            prog = r.prog,
+            viewid = r.viewid,
+            livepid = r.livepid,
+            sUrl = r.sUrl,
+            playno = r.playno,
+            rand_str = r.rand_str,
+            ftime = r.ftime,
+            seq = "${r.seq}",
+            durl = r.durl,
+            url = r.url,
+            _dc = "${r._dc}",
+            signature = r.signature
+        )
+        callBtracePage?.enqueue(object : Callback<Void> {
+            override fun onResponse(call: Call<Void>, response: Response<Void>) {
+                if (response.isSuccessful) {
+                    Log.d(TAG, "$title kvcollect success")
                 } else {
                     Log.e(TAG, "$title kvcollect status error")
                 }
